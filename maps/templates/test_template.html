@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Add Map</title>
+
+    <style type="text/css">
+      /* Set the size of the div element that contains the map */
+      #map {
+        height: 400px;
+        /* The height is 400 pixels */
+        width: 100%;
+        /* The width is the width of the web page */
+      }
+    </style>
+    
+    <div id="map"></div>
+
+    <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC8ypUj4DpEv9L8fLWbTQmp2VyiOY2Xn9g&callback=initMap&libraries=&v=weekly"
+      async
+    ></script>
+    
+  </head>
+  
+  <body>
+    <!--The div element for the map -->
+
+    <button onclick=sendBounds()>Click me to send bounds!</button>
+
+  </body>
+</html>
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<form action="/location/" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <label for="Location" style="bottom: 20;">Ex: 12, 70 </label>
+    <input id="Location" type="text" style="bottom: 20;" name="Location" value="{{ current_name }}">
+    <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+      <i class="material-icons right">send</i>
+  </button>
+  </form>
+  
+  <h3>Your location is {{data}} and your url is {{url}}</h3>
+
+
+
+  <form id='coords' action="/coords/" method="POST">
+    {% csrf_token %}
+    {{ form }}
+    <label for="coords" style="bottom: 20;">Ex: 12, 70 </label>
+    <input id="coords" type="text" style="bottom: 20;" name="coords" value="{{ current_name }}">
+    <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+      <i class="material-icons right">send</i>
+  </button>
+  </form>
+
+
+
+
+
+
+
+
+
+
+
+
+<p id="response_msg"></p> 
+<form id="username_exists_form" method='GET'>
+    
+      Name: <input type="username" name="username" />
+      <button type='submit'> Check </button>           
+</form> 
+
+
+
+     
+<form id='get_this' action='/find_coords/'  method='GET'>
+    {% csrf_token %}
+
+    <input type='submit' name='get_this'  name='data' />
+
+
+</form>
+
+
+
+
+
+
+
+<!-- JS SCRIPT-->
+
+  <script>
+    // Initialize and add the map
+    var URL = '/ajax/';
+    var map
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+    const postRequest = axios.create({
+      baseURL: '/api',
+      timeout: 5000,
+      headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': Cookies.get('csrftoken')
+      }
+      })
+
+    function initMap() {
+      const myLatlng = { lat: 40.363, lng: -75.044 };
+      const map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 2,
+          center: myLatlng,
+      });
+      // Create the initial InfoWindow.
+      let infoWindow = new google.maps.InfoWindow({
+          content: "Click the map to get Lat/Lng!",
+          position: myLatlng,
+      });
+      infoWindow.open(map);
+      // Configure the click listener.
+      map.addListener("click", (mapsMouseEvent) => {
+          // Close the current InfoWindow.
+          infoWindow.close();
+          // Create a new InfoWindow.
+          infoWindow = new google.maps.InfoWindow({
+          position: mapsMouseEvent.latLng,
+          });
+          infoWindow.setContent(
+          JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2)
+          );
+          infoWindow.open(map);
+     
+
+      });
+              
+      function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+      }
+
+      $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+          if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+          }
+        }
+      });
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
+            console.log('Position has been set successfully');
+
+            dataToSend = {
+              "fbpost": $("input[name=fb-post]").is(':checked'),
+              "latitude": position.coords.latitude,
+              "longitude": position.coords.longitude
+            };
+
+            $.ajax({
+              type: "POST",
+              dataType: 'json',
+              url: '/ajax/',
+              data: JSON.stringify(dataToSend),
+              success: function (msg) {
+                console.log('Succeeded!');            
+              },
+              error: function (err) {
+                console.log('Error!');
+              }
+            });
+          }, function (error) {
+              console.log('Position could not be obtained.')
+          }
+        );
+      }
+
+
+
+
+
+        $('#username_exists_form').on('submit',function(e){
+            e.preventDefault();
+            var username = $(this).find('input').val();
+            $.get('/exists/',
+                {'username': username,  
+                function(response){ $('#response_msg').text(response.msg); }
+                });
+        }); 
+
+
+        $('#get_this').on('submit',function(e){
+            e.preventDefault();
+            //var username = $(this).find('input').val();
+            var get_this = 'YOU GOT IT'
+            $.get('/exists/',
+                {'get_this': get_this,  
+                'user_lat' :  user_lat},
+                function(response){ $('#response_msg').text(response.msg); }
+            );
+        }); 
+
+    
+
+        var pos;
+
+        var $demo;
+
+        function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        } else {
+            $demo.text("Geolocation is not supported by this browser.");
+        }
+        }
+
+        function showPosition(position) {
+        pos = position;
+        var { latitude, longitude } = pos.coords;
+        $demo.html(`Latitude: ${latitude}<br>Longitude: ${longitude}`);
+        $('#btn_submit').attr("disabled", null);
+        }
+
+        $(document).on('submit', '#demo', function(e){
+        e.preventDefault();
+        $.ajax(
+
+        type='POST',
+        url = '/ajax/',
+        data = {
+
+         lat:'position.coords.latitude',
+         long: position.coords.longitude,
+         csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+       });
+      });
+
+
+
+
+        
+    }
+
+
+
+
+
+
+</script>
+
+
+
+
+
+
+
+  <script> type='text/javascript'
+
+  </script>
+  <p>
+    Your location is <span id="latitude">5.00</span>°
+    latitude by <span id="longitude">0.00</span>° longitude.
+  </p>
+  <button id="get-location" method='post'>
+    Get My Location
+  </button>
+  
+
+  <p id="response_msg"></p> 
+  <form id="username_exists_form" method='GET'>
+        Name: <input type="username" name="username" />
+        <button type='submit'> Check </button>           
+  </form> 
+
+
+
+
+
+<form id=demo action="/ajax/"   method='POST'>
+    {% csrf_token %}
+    {{ form }}
+  <p>Click the button to get your coordinates.</p>
+  <button id=demo onclick="getLocation()">Get JOE Location</button>
+  <p id="demo"></p>
+  <button type="button" id="btn_submit" class="btn btn-primary form-control" >Submit</button>
+
+</form>  
+
+
+
+
+
+
+
+
+  </html>
+
+
