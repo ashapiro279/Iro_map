@@ -2,33 +2,22 @@
 <html>
   <head>
     <title>Add Map</title>
-
     <style type="text/css">
       /* Set the size of the div element that contains the map */
       #map {
-        height: 400px;
+        height: 600px;
         /* The height is 400 pixels */
         width: 100%;
         /* The width is the width of the web page */
       }
     </style>
-    
     <div id="map"></div>
-
     <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
     <script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC8ypUj4DpEv9L8fLWbTQmp2VyiOY2Xn9g&callback=initMap&libraries=&v=weekly"
       async
     ></script>
-    
   </head>
-  
-  <body>
-    <!--The div element for the map -->
-
-    <button onclick=sendBounds()>Click me to send bounds!</button>
-
-  </body>
 </html>
 
 
@@ -36,101 +25,264 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<form action="/location/" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <label for="Location" style="bottom: 20;">Ex: 12, 70 </label>
-    <input id="Location" type="text" style="bottom: 20;" name="Location" value="{{ current_name }}">
-    <button class="btn waves-effect waves-light" type="submit" name="action">Submit
-      <i class="material-icons right">send</i>
-  </button>
-  </form>
+
+
+
+<h3 style="text-align: center; color: black; background-color: cadetblue; font-style: oblique;" >Choose the coordinates, year and period of time</h3>
+{% block includes%}
+{% endblock includes%}
+
+
+  </html>
+
+
+
+
+  <!DOCTYPE html>
+  <html lang="en">
   
-  <h3>Your location is {{data}} and your url is {{url}}</h3>
+  <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <title>{% block title %}{% endblock title %}</title>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+      {% block style %}
+      {% endblock style %}
+  </head>
+  
+  <body style="background-color: black;"> 
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+      {% block javascript %}
+      {% endblock javascript %}
+  
 
 
 
-  <form id='coords' action="/coords/" method="POST">
-    {% csrf_token %}
-    {{ form }}
-    <label for="coords" style="bottom: 20;">Ex: 12, 70 </label>
-    <input id="coords" type="text" style="bottom: 20;" name="coords" value="{{ current_name }}">
-    <button class="btn waves-effect waves-light" type="submit" name="action">Submit
-      <i class="material-icons right">send</i>
-  </button>
+
+
+
+<h1></h1>
+  <div class="container-fluid">
+        <form id="friend-form" method="POST" >
+            <div class="row">
+                {% csrf_token %}
+                
+                <input type="submit" class="btn btn-primary" value="Look up location" />
+                
+            </div>
+        <form>
+    </div>
+
+    <p style="color: indianred;"><b>Year: </b>
+      <select id='year' name='year' class='form-control'>
+        {%for year in years_lst %}
+        <option value={{year}}>{{year}}</option>
+        {% endfor %}
+
+      </select>
+    </p>
+    <p style="color: indianred;"><b>Period: </b>
+      <select id='period' name='period' class='form-control'>
+        {%for one in period %}
+        <option value={{one}}>{{one}}</option>
+        {% endfor %}
+
+      </select>
+    </p>
+  </body>
+
+
+
+
+
+
+    <head>
+      <title>TableView - Startup</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    </head>
+
+
+
+
+
+    <body>
+      
+    <div class="container">
+      {% if coords %}
+      <h2 class="text-center" style="color: magenta; font-family:'Segoe UI';">Showing data for  {{coords}}  <br> {{data.country_code}}, {{data.state_code}} {{data.city_name}} <br> Timezone: {{data.timezone}} <br> {{chosen_year}},  {{chosen_period}}</h2><br>  
+      {% endif %} 
+      <div style=" height:500px; overflow: auto;">
+      <table class="table table-dark table-striped">
+        <thead>
+          <tr>
+            <th>Date {{chosen_period}}</th>
+            <th>Dewpoint</th>
+            <th>Clouds (%)</th>
+            <th>Pressure (mb)</th>
+            <th>Relative Humidity (%)</th>
+            <th>Min Temp</th>
+            <th>Max Temp</th>
+            <th>Wind Speed (m/s)</th>
+            <th>Wind Direction</th>
+            <th>Precipitation (mm)</th>
+            <th>Snow (mm)</th>
+            <th>Solar Radiation (W/M^2)</th>
+            <th>GHI</th>
+            <th>DNI</th>
+
+          </tr>
+        </thead>
+
+        
+        <tbody>
+        <!-- jinja2 Technique -->
+        {% if daily %}  
+        {% for i in data.data %} 
+          <tr>
+            <td>{{i.datetime}}</td>
+            <td>{{i.dewpt}}</td>
+            <td>{{i.clouds}}</td>
+            <td>{{i.pres}}</td>
+            <td>{{i.rh}}</td>
+            <td>{{i.min_temp}}</td>
+            <td>{{i.max_temp}}</td>
+            <td>{{i.wind_spd}}</td>
+            <td>{{i.wind_dir}}</td>
+            <td>{{i.precip}}</td>
+            <td>{{i.snow}}</td>
+            <td>{{i.solar_rad}}</td>
+            <td>{{i.ghi}}</td>
+            <td>{{i.dni}}</td>
+          </tr>
+        {% endfor %}
+        {% endif %}
+        {% if pd_lst %}
+        {% for i in pd_lst %} 
+          <tr>
+            <td>{{i.datetime}}</td>
+            <td>{{i.dewpt}}</td>
+            <td>{{i.clouds}}</td>
+            <td>{{i.pres}}</td>
+            <td>{{i.rh}}</td>
+            <td>{{i.min_temp}}</td>
+            <td>{{i.max_temp}}</td>
+            <td>{{i.wind_spd}}</td>
+            <td>{{i.wind_dir}}</td>
+            <td>{{i.precip}}</td>
+            <td>{{i.snow}}</td>
+            <td>{{i.solar_rad}}</td>
+            <td>{{i.ghi}}</td>
+            <td>{{i.dni}}</td>
+          </tr>
+        {% endfor %}
+        {% endif %}
+        {% if pd_lst_monthly %}
+        {% for i in pd_lst_monthly %} 
+          <tr>
+            <td>{{i.datetime}}</td>
+            <td>{{i.dewpt}}</td>
+            <td>{{i.clouds}}</td>
+            <td>{{i.pres}}</td>
+            <td>{{i.rh}}</td>
+            <td>{{i.min_temp}}</td>
+            <td>{{i.max_temp}}</td>
+            <td>{{i.wind_spd}}</td>
+            <td>{{i.wind_dir}}</td>
+            <td>{{i.precip}}</td>
+            <td>{{i.snow}}</td>
+            <td>{{i.solar_rad}}</td>
+            <td>{{i.ghi}}</td>
+            <td>{{i.dni}}</td>
+          </tr>
+        {% endfor %}
+        {% endif %}
+        {% if year_mean_bool %}
+        <tr>
+          <td>{{year_mean.datetime}}</td>
+          <td>{{year_mean.dewpt}}</td>
+          <td>{{year_mean.clouds}}</td>
+          <td>{{year_mean.pres}}</td>
+          <td>{{year_mean.rh}}</td>
+          <td>{{year_mean.min_temp}}</td>
+          <td>{{year_mean.max_temp}}</td>
+          <td>{{year_mean.wind_spd}}</td>
+          <td>{{year_mean.wind_dir}}</td>
+          <td>{{year_mean.precip}}</td>
+          <td>{{year_mean.snow}}</td>
+          <td>{{year_mean.solar_rad}}</td>
+          <td>{{year_mean.ghi}}</td>
+          <td>{{year_mean.dni}}</td>
+        </tr>
+        {% endif %}
+        </tbody>
+      </div>
+
+
+      </table>
+    </div>    
+    <div class="container">
+    <br>
+    {% if chart %}
+    <div style=" height:500px; overflow: auto;">
+      {% for one in chart %}
+      <img src='data:image/png;base64,{{ one|safe }}'>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="container">
+    <div style=" height:500px; overflow: auto;">
+
+  {%  autoescape off %}
+  {% for graph in plotly_graph %}
+  {{graph}}
+  {% endfor %}
+  {% endautoescape%}
+
+
+</div>    
+</div>    
+<br>
+
+    </body>
+
+
+   
+
+
+
+
+    <!-- 
+  <form action="/real_ajax/" method="post">{% csrf_token %}
+      <label for="event-title">Event title</label>
+      <input type="text" title="event-title" id="event-title" required/>
+      <input type="submit" value="create event"/>
   </form>
+    -->
+
+  
 
 
 
-
-
-
-
-
-
-
-
-
-<p id="response_msg"></p> 
-<form id="username_exists_form" method='GET'>
-    
-      Name: <input type="username" name="username" />
-      <button type='submit'> Check </button>           
-</form> 
-
-
-
-     
-<form id='get_this' action='/find_coords/'  method='GET'>
-    {% csrf_token %}
-
-    <input type='submit' name='get_this'  name='data' />
-
-
-</form>
-
-
-
-
-
-
-
-<!-- JS SCRIPT-->
-
-  <script>
-    // Initialize and add the map
-    var URL = '/ajax/';
-    var map
-    function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';');
-          for (let i = 0; i < cookies.length; i++) {
-              const cookie = cookies[i].trim();
-              // Does this cookie string begin with the name we want?
-              if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                  break;
-              }
-          }
-      }
-      return cookieValue;
-  }
-  const csrftoken = getCookie('csrftoken');
-    const postRequest = axios.create({
-      baseURL: '/api',
-      timeout: 5000,
-      headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': Cookies.get('csrftoken')
-      }
-      })
-
-    function initMap() {
+    <script>
+function initMap() {
       const myLatlng = { lat: 40.363, lng: -75.044 };
+      var sendLatlng;
       const map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 2,
+          zoom: 3,
           center: myLatlng,
+          zoomControl: false,
+          
       });
       // Create the initial InfoWindow.
       let infoWindow = new google.maps.InfoWindow({
@@ -150,6 +302,7 @@
           JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2)
           );
           infoWindow.open(map);
+          sendLatlng = JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2);
      
 
       });
@@ -167,153 +320,124 @@
         }
       });
 
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          function (position) {
-            console.log('Position has been set successfully');
 
-            dataToSend = {
-              "fbpost": $("input[name=fb-post]").is(':checked'),
-              "latitude": position.coords.latitude,
-              "longitude": position.coords.longitude
-            };
-
-            $.ajax({
-              type: "POST",
-              dataType: 'json',
-              url: '/ajax/',
-              data: JSON.stringify(dataToSend),
-              success: function (msg) {
-                console.log('Succeeded!');            
-              },
-              error: function (err) {
-                console.log('Error!');
-              }
-            });
-          }, function (error) {
-              console.log('Position could not be obtained.')
-          }
-        );
-      }
+      
+      
 
 
 
+    const newLatLang = map.getBounds();
+    var test_var = 'Somewhat worked';
+
+          /*
+           On submiting the form, send the POST ajax
+       request to server and after successfull submission
+         display the object.
+       */
+       $("#friend-form").submit(function (e) {
+          // preventing from page reload and default actions
+      e.preventDefault();
+            // serialize the data for sending the form data.
+             var serializedData = $(this).serialize();
+           // make POST ajax call
+          $.ajax({
+                type: 'POST',
+               url: "/real_ajax",
+               data: {'serializedData': {'actually  string ': myLatlng},
+                      'realData': sendLatlng,
+                      'year': $('#year').val(),
+                      'period': $('#period').val(),
+                      csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+                      },
+                 success: function (response) {
+                  
 
 
-        $('#username_exists_form').on('submit',function(e){
-            e.preventDefault();
-            var username = $(this).find('input').val();
-            $.get('/exists/',
-                {'username': username,  
-                function(response){ $('#response_msg').text(response.msg); }
-                });
-        }); 
+                 $("#friend-form").trigger('reset');
+                   // 2. focus to nickname input 
+     
+                   // display the newly friend to table.
+                   $('body').html(response);
+                   $("#friend-form").trigger('reset');
+
+                
+                  },
+                  error: function (response) {
+                      // alert the error if any error occured
+                      alert(response["responseJSON"]["error"]);
+                  }
+              })
 
 
-        $('#get_this').on('submit',function(e){
-            e.preventDefault();
-            //var username = $(this).find('input').val();
-            var get_this = 'YOU GOT IT'
-            $.get('/exists/',
-                {'get_this': get_this,  
-                'user_lat' :  user_lat},
-                function(response){ $('#response_msg').text(response.msg); }
-            );
-        }); 
+       })
+      
 
-    
+}
 
-        var pos;
 
-        var $demo;
+      </script>
 
-        function getLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition);
-        } else {
-            $demo.text("Geolocation is not supported by this browser.");
+<!---->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- semantic UI -->
+    <link rel="stylesheet" type='text/css' href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.14/semantic.min.css">
+    <!--Chart js-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" integrity="sha256-Uv9BNBucvCPipKQ2NS9wYpJmi8DTOEfTA/nH2aoJALw=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css" integrity="sha256-aa0xaJgmK/X74WM224KMQeNQC2xYKwlAt08oZqjeF0E=" crossorigin="anonymous" />
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+    <title></title>
+  </head>
+  <body>
+   
+  </body>
+</html>
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
+
+
+<!--<canvas id="chart" width="500" height="500"></canvas>
+
+<script>
+
+  let ctx = document.getElementById("chart").getContext("2d");
+
+let chart = new Chart(ctx, {
+  type: "line",
+  data: {
+     labels: {{labels|safe}},
+     datasets: [
+        {
+          label: "Gross volume ($)",
+          backgroundColor: "#79AEC8",
+          borderColor: "#417690",
+          data: [26900, 28700, 27300, 29200]
         }
-        }
-
-        function showPosition(position) {
-        pos = position;
-        var { latitude, longitude } = pos.coords;
-        $demo.html(`Latitude: ${latitude}<br>Longitude: ${longitude}`);
-        $('#btn_submit').attr("disabled", null);
-        }
-
-        $(document).on('submit', '#demo', function(e){
-        e.preventDefault();
-        $.ajax(
-
-        type='POST',
-        url = '/ajax/',
-        data = {
-
-         lat:'position.coords.latitude',
-         long: position.coords.longitude,
-         csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
-       });
-      });
-
-
-
-
-        
-    }
-
-
+     ]
+  },
+  options: {
+     title: {
+        text: "Gross Volume in 2020",
+        display: true
+     }
+  }
+});
 
 
 
 
 </script>
 
-
-
-
-
-
-
-  <script> type='text/javascript'
-
-  </script>
-  <p>
-    Your location is <span id="latitude">5.00</span>°
-    latitude by <span id="longitude">0.00</span>° longitude.
-  </p>
-  <button id="get-location" method='post'>
-    Get My Location
-  </button>
-  
-
-  <p id="response_msg"></p> 
-  <form id="username_exists_form" method='GET'>
-        Name: <input type="username" name="username" />
-        <button type='submit'> Check </button>           
-  </form> 
-
-
-
-
-
-<form id=demo action="/ajax/"   method='POST'>
-    {% csrf_token %}
-    {{ form }}
-  <p>Click the button to get your coordinates.</p>
-  <button id=demo onclick="getLocation()">Get JOE Location</button>
-  <p id="demo"></p>
-  <button type="button" id="btn_submit" class="btn btn-primary form-control" >Submit</button>
-
-</form>  
-
-
-
-
-
-
-
-
-  </html>
-
-
+-->
